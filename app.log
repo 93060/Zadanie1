@@ -1,0 +1,7 @@
+2022/04/15 14:13:59 server.go:149: Polaczenie z adresu loopback (127.0.0.1) - ustawiono przykladowy adres publiczny.IP: 5.173.14.19 Autor: Sebastian Wiktor
+2022/04/15 14:15:35 server.go:149: Polaczenie z adresu loopback (127.0.0.1) - ustawiono przykladowy adres publiczny. IP: 5.173.14.19 Autor: Sebastian Wiktor
+2022/04/15 14:21:55 server.go:149: Polaczenie z adresu loopback (127.0.0.1) - ustawiono przykladowy adres publiczny. IP: 5.173.14.19 Autor: Sebastian Wiktor
+2022/04/15 14:51:25 server.go:126: listen tcp :8082: bind: address already in use
+2022/04/15 14:51:44 server.go:166: Polaczenie z adresu loopback (127.0.0.1) - ustawiono przykladowy adres publiczny. IP: 5.173.14.19 Autor: Sebastian Wiktor
+2022/04/15 21:10:45 server.go:166: Polaczenie z adresu loopback (127.0.0.1) - ustawiono przykladowy adres publiczny. IP: 5.173.14.19 Autor: Sebastian Wiktor
+2022/04/16 02:20:10 server.go:165: Polaczenie z adresu loopback (127.0.0.1) - ustawiono przykladowy adres publiczny. IP: 5.173.14.19 Autor: Sebastian Wiktor
