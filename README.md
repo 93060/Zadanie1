@@ -1,0 +1,1 @@
+# Tutaj powstanie sprawozdanie
