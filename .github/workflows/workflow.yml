@@ -1,4 +1,4 @@
-name: GitHub Actions workflow with push to GHCR.io v2
+name: GitHub Actions workflow with push to GHCR.io v3
 
 #uruchom przeplyw po kazdym pushu na branch main z wyjatkiem aktualizacji pliku README.md
 on:
@@ -47,6 +47,6 @@ jobs:
           push: true
           tags: ghcr.io/93060/zadanie1:latest
           # konfiguracja cache typu gha
-          #cache-from: type=gha
-          #cache-to: type=gha,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
       
