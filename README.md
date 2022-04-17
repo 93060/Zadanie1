@@ -1,8 +1,8 @@
 ---
-## Sprawozdanie - zadanie 1
+# Sprawozdanie - zadanie 1
 ### Autor: Sebastian Wiktor 
 ---
-### CZĘŚĆ OBOWIĄZKOWA
+## CZĘŚĆ OBOWIĄZKOWA
 
 ### 1. Kod serwera
 
@@ -109,3 +109,153 @@ $ docker buildx build -t 93060/zadanie1:multiplatform --platform linux/amd64,lin
 ![dockerhub](https://user-images.githubusercontent.com/103113980/163679177-ead3cd75-67c2-4d1f-a13b-ceddc1c003a2.png)
 
 Zbudowane obrazy można znaleźć na repozytorium DockerHub do którego link znajduje się [tutaj](https://hub.docker.com/r/93060/zadanie1/tags).
+
+---
+## CZĘŚĆ DODATKOWA
+
+### **DODATEK 1**
+
+### 1. Wykorzystanie GitHub Actions, cache oraz Github Container Registry
+
+Proces budowania naszego obrazu możemy w bardzo prosty i szybki sposób zautomatyzować za pomocą `GitHub Actions`. Aby rozpocząć korzystanie z tego narzędzia, w górnym panelu naszego repozytorium na `GitHub` wybieramy `Actions`.
+
+![actions](https://user-images.githubusercontent.com/103113980/163727087-05235fcf-989a-43b1-9672-8057829ab559.png)
+
+W zakładce `Actions` tworzymy nowy `Workflow`. Możemy wybrać przepływ sugerowany przez GitHub, który jest wstępnie skonfiguroway pod `Docker Image` lub utworzyć własny. 
+
+![workflow](https://user-images.githubusercontent.com/103113980/163727808-1c7114e5-781c-4778-aa05-6925c2473d24.png)
+
+---
+
+![create_yml](https://user-images.githubusercontent.com/103113980/163727946-f091067d-b471-46a7-aae7-090f9dbf73ce.png)
+
+Po prawej stronie znajduje się przydatne narzędzie `Marketplace`, w któym możemy znaleźć gotowe funkcje np. logowanie się do `Dockera`, czy konfiguracja `QEMU`.
+Informacje o tym, jak stworzyć przepływ i zautomatyzować proces budowania i publikowania obrazu możemy znależć w dokumentacji Dockera pod tym [linkiem](https://docs.docker.com/ci-cd/github-actions/).
+
+Na podstawie dokumentacji, informacji znalezionych w internecie oraz przepływu wykonanego na zajęciach stworzyłem `Workflow`, który zbuduje obraz na 3 wybrane platformy a następnie opublikuje go na `GitHub Containers Registry`. Dodałem również zapis do pamięci `cache` (ostatnie linijki kodu), jednak na razie na potrzeby przetestowania działania tej funkcji zostały one zakomentowane. Kod przepływu znajduje się [tutaj](../.github/workflows/workflow.yml)
+
+```yml
+name: GitHub Actions workflow with push to GHCR
+
+#uruchom przeplyw po kazdym pushu na branch main z wyjatkiem aktualizacji pliku README.md
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**/README.md'
+      
+# zadania do wykonania - build i push obrazu na maszynie z ubuntu
+jobs:
+  build-push-images:
+    name: Build and push to GHCR
+    runs-on: ubuntu-latest
+    
+#kroki do wykonania 
+    steps:
+        # sprawdzenie poprawnosci kodu
+      - name: Checkout code
+        uses: actions/checkout@v2
+        # uruchomienie QEMU w celu zbudowania obrazow na rozne platformy 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+        # uruchomienie buildera buildx
+      - name: Buildx set-up
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        
+        # logowanie do github container registry z wykorzystaniem zmiennej srodowiskowej 
+        # GHCR_PASSWORD umieszczonej w secrets, w ktorej zapisany jest token dostępu dostępowy 
+      - name: Login to GitHub
+        uses: docker/login-action@v1 
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_PASSWORD }}
+
+        # budowa i publikacja obrazow na GHCR
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64/v8,linux/arm/v7
+          push: true
+          tags: ghcr.io/93060/zadanie1:latest
+          # konfiguracja cache typu gha
+          #cache-from: type=gha
+          #cache-to: type=gha,mode=max
+```      
+> ⚠️ `UWAGA:` Informacje o tym jak wygenerować token dostępowy znajduję się pod tym [linkiem](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) w dokumentacji GitHub. [Tutaj](https://github.com/Azure/actions-workflow-samples/blob/master/assets/create-secrets-for-GitHub-workflows.md) znajdziemy informację o tym jak wygenerowany token dodać do zmiennej środowiskowej w `Secrets` 
+
+Po utworzeniu pliku workflow.yml w `Actions` od razu uruchomił się przepływ.
+
+![start](https://user-images.githubusercontent.com/103113980/163730764-96440991-885b-4f00-9109-20f5af000540.png)
+
+Po chwili dostajemy informacje, że przepływ wykonał się prawidłowo. 
+
+![success](https://user-images.githubusercontent.com/103113980/163731132-e56a0d67-cdff-4aae-8643-32a0c788aabb.png)
+
+Wchodząc na nasz profil `GitHub`, a następnie w zakładkę `Packages` widzimy paczkę zadanie1, która zawiera zbudowane przez nas obrazy. 
+
+![package](https://user-images.githubusercontent.com/103113980/163731226-49ed5193-6be9-4e80-ae86-64929ef5df22.png)
+
+Jak widać konfiguracja GitHub Container Registry jest bardzo prosta i wymaga niewielu modyfikacji w porównaniu gdy obraz publikowaliśmy na `DockerHub` podczas jednych z zajęć. Modyfikacji musimy poddać następujące fragmenty kodu: 
+
+```yml
+ - name: Login to GitHub
+        uses: docker/login-action@v1 
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_PASSWORD }}  
+```
+
+W akcji `uses: docker/login-action@v1 ` należy dodać linijkę `registry: ghcr.io` oraz zamiast danych do logowania na `DockerHub` podać dane do logowania na `GitHub`.
+
+```
+ - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64/v8,linux/arm/v7
+          push: true
+          tags: ghcr.io/93060/zadanie1:latest
+```
+
+W akcji `docker/build-push-action@v2` należy zmodyfikować linijkę `tags`: tutaj zamiast repozytorium na `DockerHub` podajemy ściezkę do naszego `GHCR`. 
+
+### Testowanie działania zapisu do pamięci podręcznej cache
+
+Zaczniemy od zbudowania kolejnej wersji naszych obrazów nie uruchamiając jeszcze zapisu do pamięci cache. Modyfikacji poddamy pierwszą linijkę kodu w pliku workflow.yml 
+
+![cachev1](https://user-images.githubusercontent.com/103113980/163731787-16363a02-58de-448f-bf33-163f53870afa.png)
+
+Widzimy, że pomimo kosmetycznych zmian czas wykonania przepływu był zbliżony do tego pierwszego, co oznacza, że `GitHub Actions` automatycznie nie cachuje żadnych danych. Teraz odkomentujemy linijki i uruchomimy zapis do pamięci `cache`.
+
+```yml
+- name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64/v8,linux/arm/v7
+          push: true
+          tags: ghcr.io/93060/zadanie1:latest
+          # konfiguracja cache typu gha
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+```  
+
+
+
+
+
+
+
+
+
