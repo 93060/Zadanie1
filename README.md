@@ -61,7 +61,7 @@ Aby uzyskać dostęp do logów zapisywanych przez serwer należy użyć adresu `
 
 ![logs](https://user-images.githubusercontent.com/103113980/163670599-77e18c3c-e21f-4d97-869d-ed2f2a3996a6.png)
 
-**`UWAGA:`** W logach zapisywanych przez serwer wyświetlana jest data i godzina zgodna dla domyślnego w kontenerze czasu wzorcowego UTC. Rozbieżność w godzinach wyświetlanych na głównej stronie i w logach wynika stąd, że adres IP dla którego wyświetlane są informacje znajduje się w strefie czasowej UTC+02:00.
+> ⚠️ `UWAGA:` W logach zapisywanych przez serwer wyświetlana jest data i godzina zgodna dla domyślnego w kontenerze czasu wzorcowego UTC. Rozbieżność w godzinach wyświetlanych na głównej stronie i w logach wynika stąd, że adres IP dla którego wyświetlane są informacje znajduje się w strefie czasowej UTC+02:00.
 
 **d.&ensp; Sprawdzenie ilości warstw w zbudowanym obrazie**
 
@@ -193,7 +193,7 @@ Po utworzeniu pliku workflow.yml w `Actions` od razu uruchomił się przepływ.
 
 ![start](https://user-images.githubusercontent.com/103113980/163730764-96440991-885b-4f00-9109-20f5af000540.png)
 
-Po chwili dostajemy informacje, że przepływ wykonał się prawidłowo. 
+Po chwili dostajemy informację, że przepływ wykonał się prawidłowo. 
 
 ![success](https://user-images.githubusercontent.com/103113980/163731132-e56a0d67-cdff-4aae-8643-32a0c788aabb.png)
 
@@ -212,7 +212,7 @@ Jak widać konfiguracja GitHub Container Registry jest bardzo prosta i wymaga ni
           password: ${{ secrets.GHCR_PASSWORD }}  
 ```
 
-W akcji `uses: docker/login-action@v1 ` należy dodać linijkę `registry: ghcr.io` oraz zamiast danych do logowania na `DockerHub` podać dane do logowania na `GitHub`.
+W akcji `uses: docker/login-action@v1` należy dodać linijkę `registry: ghcr.io` oraz zamiast danych do logowania na `DockerHub` podać dane do logowania na `GitHub`.
 
 ```
  - name: Build and push
@@ -227,6 +227,8 @@ W akcji `uses: docker/login-action@v1 ` należy dodać linijkę `registry: ghcr.
 ```
 
 W akcji `docker/build-push-action@v2` należy zmodyfikować linijkę `tags`: tutaj zamiast repozytorium na `DockerHub` podajemy ściezkę do naszego `GHCR`. 
+
+---
 
 ### Testowanie działania zapisu do pamięci podręcznej cache
 
@@ -251,11 +253,20 @@ Widzimy, że pomimo kosmetycznych zmian czas wykonania przepływu był zbliżony
           cache-to: type=gha,mode=max
 ```  
 
+Wykonujemy kolejny przepływ - ten trwał wyraźnie dłużej niż budowanie poprzednich obrazów. 
 
+![cachev2](https://user-images.githubusercontent.com/103113980/163732375-8dcaebd2-b4fa-4b72-aa6b-5701d177cfb8.png)
 
+Wchodząc w logi widzimy, że na dodatkowy czas wpłynął eksport danych do pamięci cache. 
 
+![cachev3](https://user-images.githubusercontent.com/103113980/163732378-e9247669-1c38-44f9-a257-c65c3fa0774b.jpg)
 
+Uruchamiamy ostatni przepływ. Także tym razem wprowadzamy tylko kosmetyczną zmianę w pierwszej linijce pliku workflow.yml.
+Widać ogromną różnicę - wykonanie przepływu trwało tylko `41 sekund`, około `6 razy szybciej` niż poprzednio. 
 
+![cachev4](https://user-images.githubusercontent.com/103113980/163732626-b00afc4b-7822-4fe1-b668-e7a46f6ebe86.png)
 
+Wchodząc w logi tego przepływu możemy znaleźć informację o wykorzystaniu pamięci `cache`.
 
+![cached](https://user-images.githubusercontent.com/103113980/163732786-9545ca78-c7a7-4de1-978d-1a63f58ab566.png)
 
