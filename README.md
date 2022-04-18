@@ -302,20 +302,82 @@ Wgrywamy obraz do naszego rejestru
 $ docker push localhost:6677/private-ubuntu
 ```
 
-Aby sprawdzić czy nasz rejestr rzeczywiście działa usuńmy oba obrazy Ubuntu i spróbujmy pobrać go z rejestru
+Aby sprawdzić czy nasz rejestr rzeczywiście działa usuńmy oba obrazy Ubuntu i spróbujmy pobrać go z rejestru.
 
 ![ubuntu_push](https://user-images.githubusercontent.com/103113980/163839954-45f5428c-183a-4af5-a0da-fb118a4e7c10.png)
 
+Udało pobrać się obraz Ubuntu z naszego prywatnego rejestru. 
 
+### 2. Dodanie mechanizmu kontroli dostępu htpasswd. 
 
+Zgodnie z tym, co napisano w [dokumentacji](https://docs.docker.com/registry/deploying/#native-basic-auth) Dockera, aby korzystać z uwierzytelniania należy wcześniej skonfigurować `TLS`. Aby to zrobić musimy wygenerować certyfikat SSL dla domeny localhost. 
 
+Utworzenie folderu `certs` w którym zapiszemy wszystkie wygenerowane pliki. Folder znajduje się w katalogu domowym użytkownika `student`.
 
+```
+$ mkdir certs && cd certs
+```
 
+Stworzenie własnego urzędu certyfikacji CA
 
+```
+openssl req -x509 -nodes -new -sha256 -days 1024 -newkey rsa:2048 -keyout RootCA.key -out RootCA.pem -subj "/C=PL/CN=POLLUB-CA"
+```
+```
+openssl x509 -outform pem -in RootCA.pem -out RootCA.crt
+```
 
+Tworzymy plik `domains.ext` który będzie zawierał informacje o naszej domenie
 
+```
+authorityKeyIdentifier=keyid,issuer
+basicConstraints=CA:FALSE
+keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+subjectAltName = @alt_names
+[alt_names]
+DNS.1 = localhost
+```
 
+Generujemy pliki `localhost.key`, `localhost.crt` oraz `localhost.csr`. 
 
+```
+$ openssl req -new -nodes -newkey rsa:2048 -keyout localhost.key -out localhost.csr -subj "/C=PL/ST=Lubelskie/L=Lublin/O=PrivateLocalhostCert/CN=localhost.local"
+```
 
+```
+$ openssl x509 -req -sha256 -days 1024 -in localhost.csr -CA RootCA.pem -CAkey RootCA.key -CAcreateserial -extfile domains.ext -out localhost.crt
+```
 
+Następnym krokiem jest utworzenie danych logowania użytkownika za pomocą `htpasswd`. Cały proces został opisany w podlinkowanej do zadania [dokumentacji](https://docs.docker.com/registry/deploying/#native-basic-auth) Dockera. Dane do logowania wygenerujemy w folderze `auth`, który również znajduje się w katalogu domowym użytkownika `student`.
 
+```
+$ sudo docker run --entrypoint htpasswd httpd:2 -Bbn testuser testpassword > auth/htpasswd
+```
+
+Po utworzeniu użytkownika `testuser` z hasłem `testpassword` zatrzymujemy kontener z rejestrem. 
+
+```
+$ docker container stop private_registry && docker rm private_registry
+```
+
+Uruchamiamy kontener z uwierzytelnianiem. 
+
+```
+docker run -d \
+  -p 6677:5000 \
+  --restart=always \
+  --name registry_private \
+  -v "$(pwd)"/auth:/auth \
+  -e "REGISTRY_AUTH=htpasswd" \
+  -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \
+  -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd \
+  -v "$(pwd)"/certs:/certs \
+  -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/localhost.crt \
+  -e REGISTRY_HTTP_TLS_KEY=/certs/localhost.key \
+  registry
+  
+  ```
+  
+  ![auth](https://user-images.githubusercontent.com/103113980/163878703-bcbac3b1-2bf8-44ce-b41c-97dbc55b5417.png)
+  
+Jak widać uruchomienie kontenera - rejestru z uwierzytelnianiem powiodło się. Przy próbie wypchnięcia wcześniej utworzonego obrazu ubuntu dostaliśmy informację o braku bycia uwierzytelnionym. Po próbie logowania się na użytkownika `testuser` z hasłem `testpassword` dostaliśmy informację o powodzeniu  i kolejna próba pushu obrazu powiodła się.   
