@@ -8,6 +8,8 @@
 
 Serwer został napisany w języku `Go`. Kod programu wraz z komentarzami znajduje się w pliku [server.go](../main/server.go).
 
+---
+
 ### 2. Dockerfile
 ```dockerfile
 FROM golang:1.18 as gobuilder
@@ -36,8 +38,10 @@ Następnie aby zmniejszyć rozmiar pliku wykonywalnego (a co za tym idzie równi
 [UPX](../main/upx-3.96-amd64_linux.tar.xz). Dzięki niemu plik wykonywalny zmniejszył się z 5.1MB do 1.58MB. 
 UPX sam wykrywa architekturę na której jest używany, więc budowanie obrazów na platformy inne niż x86-64 nie sprawia żadnych problemów i możemy użyć tego samego pliku .tar (chociaż sama nazwa pliku może być myląca). Kolejna warstwa
 to warstwa scratch. Serwer nie wymaga żadnych
-pakietów czy programów więc scratch jest optymalnym rozwiązaniem. Aby docker zbudował obraz jedynym wymaganiem było dodanie [certyfikatów CA](../main/ca-certificates.srt).    
+pakietów czy programów więc scratch jest optymalnym rozwiązaniem. Aby docker zbudował obraz jedynym wymaganiem było dodanie [certyfikatów](../main/ca-certificates.srt).    
 Serwer uruchamiany jest na porcie 8082.  
+
+---
 
 ### 3. Polecenia
 **a.&ensp;Zbudowanie opracowanego obrazu kontenera:** 
@@ -270,13 +274,15 @@ Wchodząc w logi tego przepływu możemy znaleźć informację o wykorzystaniu p
 
 ![cached](https://user-images.githubusercontent.com/103113980/163732786-9545ca78-c7a7-4de1-978d-1a63f58ab566.png)
 
+---
+
 ### **DODATEK 2**
 
 ### 1. Uruchomienie prywatnego rejestru 
 
 **a.&ensp;Uruchomienie kontenera na porcie 6677** 
 
-Uruchomienie kontenera z rejestrem. Flaga --restart=always powoduje, że kontener w razie zatrzymania automatycznie zostanie zrestartowany i uruchomiony ponownie. 
+Uruchomienie kontenera z rejestrem. Flaga `--restart=always` powoduje, że kontener w razie zatrzymania automatycznie zostanie zrestartowany i uruchomiony ponownie. 
 ```
 $ docker run -d -p 6677:5000 --restart=always --name private_registry registry
 ```
@@ -290,7 +296,7 @@ Kontener uruchomił się prawidłowo. Widzimy, że nasłuchuje on na porcie 6677
 $ docker pull ubuntu:latest
 ```
 
-Zmiana nazwy obrazu - dodajemy tag do istniejącego obrazu. Gdy pierwsza część tagu zawiera nazwę hosta i port Docker interpretuje ją jako lokalizację rejestru przy pushowaniu obrazu. 
+Zmiana nazwy obrazu - dodajemy tag do istniejącego obrazu. Gdy pierwsza część tagu zawiera nazwę hosta i port, `Docker` interpretuje ją jako lokalizację rejestru przy pushowaniu obrazu. 
 
 ```
 $ docker tag ubuntu:latest localhost:6677/private_ubuntu
@@ -308,11 +314,13 @@ Aby sprawdzić czy nasz rejestr rzeczywiście działa usuńmy oba obrazy Ubuntu 
 
 Udało pobrać się obraz Ubuntu z naszego prywatnego rejestru. 
 
+---
+
 ### 2. Dodanie mechanizmu kontroli dostępu htpasswd. 
 
 Zgodnie z tym, co napisano w [dokumentacji](https://docs.docker.com/registry/deploying/#native-basic-auth) Dockera, aby korzystać z uwierzytelniania należy wcześniej skonfigurować `TLS`. Aby to zrobić musimy wygenerować certyfikat SSL dla domeny localhost. 
 
-Utworzenie folderu `certs` w którym zapiszemy wszystkie wygenerowane pliki. Folder znajduje się w katalogu domowym użytkownika `student`.
+W tym celu tworzymy folder `certs`, w którym zapiszemy wszystkie wygenerowane pliki. Folder znajduje się w katalogu domowym użytkownika `student`.
 
 ```
 $ mkdir certs && cd certs
@@ -321,10 +329,10 @@ $ mkdir certs && cd certs
 Stworzenie własnego urzędu certyfikacji CA
 
 ```
-openssl req -x509 -nodes -new -sha256 -days 1024 -newkey rsa:2048 -keyout RootCA.key -out RootCA.pem -subj "/C=PL/CN=POLLUB-CA"
+$ openssl req -x509 -nodes -new -sha256 -days 1024 -newkey rsa:2048 -keyout RootCA.key -out RootCA.pem -subj "/C=PL/CN=POLLUB-CA"
 ```
 ```
-openssl x509 -outform pem -in RootCA.pem -out RootCA.crt
+$ openssl x509 -outform pem -in RootCA.pem -out RootCA.crt
 ```
 
 Tworzymy plik `domains.ext` który będzie zawierał informacje o naszej domenie
@@ -354,7 +362,7 @@ Następnym krokiem jest utworzenie danych logowania użytkownika za pomocą `htp
 $ sudo docker run --entrypoint htpasswd httpd:2 -Bbn testuser testpassword > auth/htpasswd
 ```
 
-Po utworzeniu użytkownika `testuser` z hasłem `testpassword` zatrzymujemy kontener z rejestrem. 
+Po utworzeniu użytkownika `testuser` z hasłem `testpassword` zatrzymujemy kontener z rejestrem i usuwamy go. 
 
 ```
 $ docker container stop private_registry && docker rm private_registry
@@ -375,9 +383,10 @@ docker run -d \
   -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/localhost.crt \
   -e REGISTRY_HTTP_TLS_KEY=/certs/localhost.key \
   registry
-  
   ```
   
-  ![auth](https://user-images.githubusercontent.com/103113980/163878703-bcbac3b1-2bf8-44ce-b41c-97dbc55b5417.png)
+![auth](https://user-images.githubusercontent.com/103113980/163878703-bcbac3b1-2bf8-44ce-b41c-97dbc55b5417.png)
   
-Jak widać uruchomienie kontenera - rejestru z uwierzytelnianiem powiodło się. Przy próbie wypchnięcia wcześniej utworzonego obrazu ubuntu dostaliśmy informację o braku bycia uwierzytelnionym. Po próbie logowania się na użytkownika `testuser` z hasłem `testpassword` dostaliśmy informację o powodzeniu  i kolejna próba pushu obrazu powiodła się.   
+Jak widać uruchomienie rejestru z uwierzytelnianiem powiodło się. Przy próbie wypchnięcia wcześniej utworzonego obrazu Ubuntu dostaliśmy informację o braku bycia uwierzytelnionym. Po zalogowaniu się na użytkownika `testuser` z hasłem `testpassword` próba przesłania obrazu na repozytorium powiodła się.
+
+---
