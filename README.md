@@ -32,12 +32,7 @@ ADD ca-certificates.crt /etc/ssl/certs/
 EXPOSE 8082
 ENTRYPOINT [ "/server" ]
 ```
-Plik [Dockerfile](../main/Dockerfile) wykorzystuje wieloetapową metodę budowania obrazu. Pierwsza warstwa odpowiedzialna jest za zbudowanie pliku wykonywalnego serwera. Wykorzystywany
-jest tutaj prosty skrypt znajdujący się w pliku [setup.sh](../main/setup.sh.sh), który umożliwi przyszłe zbudowanie obrazu kontenera na architektury `amd64`, `arm/v7` oraz `arm64/v8`.
-Następnie aby zmniejszyć rozmiar pliku wykonywalnego (a co za tym idzie obrazu kontenera) wykorzystywany jest program
-[UPX](../main/upx-3.96-amd64_linux.tar.xz). Dzięki niemu plik wykonywalny zmniejszył się z `5.1 MB` do `1.58 MB`. 
-UPX sam wykrywa architekturę na której jest używany, więc budowanie obrazów na platformy inne niż x86-64 nie sprawia żadnych problemów i możemy użyć tego samego pliku .tar (chociaż sama nazwa pliku może być myląca). Kolejna warstwa to warstwa scratch. Serwer nie wymaga instalacji żadnych dodatkowych pakietów czy programów więc scratch jest optymalnym rozwiązaniem. Aby Docker zbudował obraz wymagane było dodanie [certyfikatów](../main/ca-certificates.srt).    
-Serwer uruchamiany jest na porcie `8082`.  
+Plik [Dockerfile](../main/Dockerfile) wykorzystuje wieloetapową metodę budowania obrazu. Pierwsza warstwa odpowiedzialna jest za zbudowanie pliku wykonywalnego serwera. Wykorzystywany jest tutaj prosty skrypt znajdujący się w pliku [setup.sh](../main/setup.sh.sh), który umożliwi przyszłe zbudowanie obrazu kontenera na architektury `amd64`, `arm/v7` oraz `arm64/v8`.Następnie aby zmniejszyć rozmiar pliku wykonywalnego (a co za tym idzie obrazu kontenera) wykorzystywany jest program [UPX](../main/upx-3.96-amd64_linux.tar.xz). Dzięki niemu plik wykonywalny zmniejszył się z `5.1 MB` do `1.58 MB`. UPX sam wykrywa architekturę na której jest używany, więc budowanie obrazów na platformy inne niż x86-64 nie sprawia żadnych problemów i możemy użyć tego samego pliku .tar (chociaż sama nazwa pliku może być myląca). Kolejna warstwa to warstwa scratch. Serwer nie wymaga instalacji żadnych dodatkowych pakietów czy programów więc scratch jest optymalnym rozwiązaniem. Aby Docker zbudował obraz wymagane było dodanie [certyfikatów](../main/ca-certificates.srt). Serwer uruchamiany jest na porcie `8082`.  
 
 ---
 
@@ -82,7 +77,7 @@ $ docker image inspect serwer
 
 ### 4. Budowanie obrazów na różne architektury
 
-Aby było możliwe zbudowanie obrazów na różne platformy sprzętowe musimy skorzystać z zasobów emulatora QEMU. Na potrzeby wykonania tego zadania zainstalujemy QEMU lokalnie, ale można to zrobić w alternatywny sposób z wykorzystaniem dedykowanego kontenera. Następnie do zbudowania obrazów wykorzystamy wraper buildx. 
+Aby było możliwe zbudowanie obrazów na różne platformy sprzętowe musimy skorzystać z zasobów emulatora `QEMU`. Na potrzeby wykonania tego zadania zainstalujemy `QEMU` lokalnie, ale można to zrobić w alternatywny sposób z wykorzystaniem dedykowanego kontenera. Następnie do zbudowania obrazów wykorzystamy wraper `buildx`. 
 
 **Instalacja zasobów QEMU**
 
@@ -106,11 +101,11 @@ $ docker buildx use serwerbuilder
 $ docker buildx build -t 93060/zadanie1:multiplatform --platform linux/amd64,linux/arm64/v8,linux/arm/v7 --push . 
 ```
 
-**Potwierdzenie poprawnego zbudowania obrazów - repozytorium DockerHub**
+**Potwierdzenie poprawnego zbudowania obrazów - repozytorium `DockerHub`**
 
 ![dockerhub](https://user-images.githubusercontent.com/103113980/163679177-ead3cd75-67c2-4d1f-a13b-ceddc1c003a2.png)
 
-Zbudowane obrazy można znaleźć na repozytorium DockerHub do którego link znajduje się [tutaj](https://hub.docker.com/r/93060/zadanie1/tags).
+Zbudowane obrazy można znaleźć na repozytorium `DockerHub` do którego link znajduje się [tutaj](https://hub.docker.com/r/93060/zadanie1/tags).
 
 ---
 ## CZĘŚĆ DODATKOWA
