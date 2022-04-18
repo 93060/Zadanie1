@@ -1,4 +1,4 @@
-name: GitHub Actions workflow with push to GHCR.io v4
+name: GitHub Actions workflow with push to GHCR.io
 
 #uruchom przeplyw po kazdym pushu na branch main z wyjatkiem aktualizacji pliku README.md
 on:
