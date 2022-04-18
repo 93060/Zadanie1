@@ -6,7 +6,7 @@
 
 ### 1. Kod serwera
 
-Serwer został napisany w języku `Go`. Kod programu wraz z komentarzami znajduje się w pliku [server.go](../main/server.go).
+Serwer został napisany w języku `Go`. Kod programu wraz z komentarzami znajduje się w pliku [server.go](../main/server.go)
 
 ---
 
@@ -32,14 +32,12 @@ ADD ca-certificates.crt /etc/ssl/certs/
 EXPOSE 8082
 ENTRYPOINT [ "/server" ]
 ```
-Plik Dockerfile wykorzystuje wieloetapową metodę budowania obrazu. Pierwsza warstwa odpowiedzialna jest za zbudowanie pliku wykonywalnego serwera. Wykorzystywany
-jest tutaj prosty [skrypt](../main/skrypt.sh) napisany w bashu, który umożliwi przyszłe zbudowanie obrazu kontenera na różne architektury `amd64`, `arm/v7` oraz `arm64/v8`.
-Następnie aby zmniejszyć rozmiar pliku wykonywalnego (a co za tym idzie również obrazu kontenera) wykorzystywany jest program
-[UPX](../main/upx-3.96-amd64_linux.tar.xz). Dzięki niemu plik wykonywalny zmniejszył się z 5.1MB do 1.58MB. 
-UPX sam wykrywa architekturę na której jest używany, więc budowanie obrazów na platformy inne niż x86-64 nie sprawia żadnych problemów i możemy użyć tego samego pliku .tar (chociaż sama nazwa pliku może być myląca). Kolejna warstwa
-to warstwa scratch. Serwer nie wymaga żadnych
-pakietów czy programów więc scratch jest optymalnym rozwiązaniem. Aby docker zbudował obraz jedynym wymaganiem było dodanie [certyfikatów](../main/ca-certificates.srt).    
-Serwer uruchamiany jest na porcie 8082.  
+Plik [Dockerfile](../main/Dockerfile) wykorzystuje wieloetapową metodę budowania obrazu. Pierwsza warstwa odpowiedzialna jest za zbudowanie pliku wykonywalnego serwera. Wykorzystywany
+jest tutaj prosty skrypt znajdujący się w pliku [setup.sh](../main/setup.sh.sh), który umożliwi przyszłe zbudowanie obrazu kontenera na architektury `amd64`, `arm/v7` oraz `arm64/v8`.
+Następnie aby zmniejszyć rozmiar pliku wykonywalnego (a co za tym idzie obrazu kontenera) wykorzystywany jest program
+[UPX](../main/upx-3.96-amd64_linux.tar.xz). Dzięki niemu plik wykonywalny zmniejszył się z `5.1 MB` do `1.58 MB`. 
+UPX sam wykrywa architekturę na której jest używany, więc budowanie obrazów na platformy inne niż x86-64 nie sprawia żadnych problemów i możemy użyć tego samego pliku .tar (chociaż sama nazwa pliku może być myląca). Kolejna warstwa to warstwa scratch. Serwer nie wymaga instalacji żadnych dodatkowych pakietów czy programów więc scratch jest optymalnym rozwiązaniem. Aby Docker zbudował obraz wymagane było dodanie [certyfikatów](../main/ca-certificates.srt).    
+Serwer uruchamiany jest na porcie `8082`.  
 
 ---
 
@@ -55,7 +53,7 @@ $ DOCKER_BUILDKIT=1 docker build -t serwer .
 $ docker run -t --name serwer -p 8082:8082 serwer
 ```
 
-**c.&ensp; Działanie serwera**
+**c.&ensp; Działanie serwera i dostęp do danych**
 
 Wchodząc w przeglądarkę i wpisując adres `localhost:8082` ukazuje nam się działająca strona uruchomionego serwera
 
@@ -65,7 +63,7 @@ Aby uzyskać dostęp do logów zapisywanych przez serwer należy użyć adresu `
 
 ![logs](https://user-images.githubusercontent.com/103113980/163670599-77e18c3c-e21f-4d97-869d-ed2f2a3996a6.png)
 
-> ⚠️ `UWAGA:` W logach zapisywanych przez serwer wyświetlana jest data i godzina zgodna dla domyślnego w kontenerze czasu wzorcowego UTC. Rozbieżność w godzinach wyświetlanych na głównej stronie i w logach wynika stąd, że adres IP dla którego wyświetlane są informacje znajduje się w strefie czasowej UTC+02:00.
+> ⚠️ `UWAGA:` W logach zapisywanych przez serwer wyświetlana jest data i godzina zgodna dla domyślnego w kontenerze czasu wzorcowego `UTC`. Rozbieżność w godzinach wyświetlanych na głównej stronie i w logach wynika stąd, że adres IP dla którego wyświetlane są informacje znajduje się w strefie czasowej `UTC+02:00`.
 
 **d.&ensp; Sprawdzenie ilości warstw w zbudowanym obrazie**
 
