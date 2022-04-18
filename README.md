@@ -270,3 +270,52 @@ Wchodząc w logi tego przepływu możemy znaleźć informację o wykorzystaniu p
 
 ![cached](https://user-images.githubusercontent.com/103113980/163732786-9545ca78-c7a7-4de1-978d-1a63f58ab566.png)
 
+### **DODATEK 2**
+
+### 1. Uruchomienie prywatnego rejestru 
+
+**a.&ensp;Uruchomienie kontenera na porcie 6677** 
+
+Uruchomienie kontenera z rejestrem. Flaga --restart=always powoduje, że kontener w razie zatrzymania automatycznie zostanie zrestartowany i uruchomiony ponownie. 
+```
+$ docker run -d -p 6677:5000 --restart=always --name private_registry registry
+```
+Kontener uruchomił się prawidłowo. Widzimy, że nasłuchuje on na porcie 6677 i jest widoczny na liście uruchomionych kontenerów. 
+
+![registry](https://user-images.githubusercontent.com/103113980/163835977-70146c51-4277-48d0-8e06-583eaa09f9ae.png)
+
+**b.&ensp;Pobranie najnowszego Ubuntu i wgranie go do utworzonego rejestru** 
+
+```
+$ docker pull ubuntu:latest
+```
+
+Zmiana nazwy obrazu - dodajemy tag do istniejącego obrazu. Gdy pierwsza część tagu zawiera nazwę hosta i port Docker interpretuje ją jako lokalizację rejestru przy pushowaniu obrazu. 
+
+```
+$ docker tag ubuntu:latest localhost:6677/private_ubuntu
+```
+
+Wgrywamy obraz do naszego rejestru
+
+```
+$ docker push localhost:6677/private-ubuntu
+```
+
+Aby sprawdzić czy nasz rejestr rzeczywiście działa usuńmy oba obrazy Ubuntu i spróbujmy pobrać go z rejestru
+
+![ubuntu_push](https://user-images.githubusercontent.com/103113980/163839954-45f5428c-183a-4af5-a0da-fb118a4e7c10.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
