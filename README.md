@@ -196,7 +196,7 @@ Po chwili dostajemy informację, że przepływ wykonał się prawidłowo.
 
 ![success](https://user-images.githubusercontent.com/103113980/163731132-e56a0d67-cdff-4aae-8643-32a0c788aabb.png)
 
-Wchodząc na nasz profil `GitHub`, a następnie w zakładkę `Packages` widzimy paczkę zadanie1, która zawiera zbudowane przez nas obrazy. 
+Wchodząc na nasz profil `GitHub`, a następnie w zakładkę `Packages` widzimy paczkę [zadanie1](https://github.com/93060/Zadanie1/pkgs/container/zadanie1), która zawiera zbudowane przez nas obrazy. 
 
 ![package](https://user-images.githubusercontent.com/103113980/163731226-49ed5193-6be9-4e80-ae86-64929ef5df22.png)
 
