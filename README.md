@@ -75,6 +75,8 @@ $ docker image inspect serwer
 ```
 ![inspect](https://user-images.githubusercontent.com/103113980/163675691-a389046c-5486-44d0-bd6a-49a6bae6b1e2.png)
 
+---
+
 ### 4. Budowanie obrazów na różne architektury
 
 Aby było możliwe zbudowanie obrazów na różne platformy sprzętowe musimy skorzystać z zasobów emulatora `QEMU`. Na potrzeby wykonania tego zadania zainstalujemy `QEMU` lokalnie, ale można to zrobić w alternatywny sposób z wykorzystaniem dedykowanego kontenera. Następnie do zbudowania obrazów wykorzystamy wraper `buildx`. 
@@ -129,7 +131,7 @@ W zakładce `Actions` tworzymy nowy `Workflow`. Możemy wybrać przepływ sugero
 Po prawej stronie znajduje się przydatne narzędzie `Marketplace`, w któym możemy znaleźć gotowe funkcje np. logowanie się do `Dockera`, czy konfiguracja `QEMU`.
 Informacje o tym, jak stworzyć przepływ i zautomatyzować proces budowania i publikowania obrazu możemy znależć w dokumentacji Dockera pod tym [linkiem](https://docs.docker.com/ci-cd/github-actions/).
 
-Na podstawie dokumentacji, informacji znalezionych w internecie oraz przepływu wykonanego na zajęciach stworzyłem `Workflow`, który zbuduje obraz na 3 wybrane platformy a następnie opublikuje go na `GitHub Containers Registry`. Dodałem również zapis do pamięci `cache` (ostatnie linijki kodu), jednak na razie na potrzeby przetestowania działania tej funkcji zostały one zakomentowane. Kod przepływu znajduje się [tutaj](../.github/workflows/workflow.yml)
+Na podstawie dokumentacji, informacji znalezionych w internecie oraz przepływu wykonanego na zajęciach stworzyłem `Workflow`, który zbuduje obraz na 3 wybrane platformy a następnie opublikuje go na `GitHub Containers Registry`. Skonfigurowałem również zapis do pamięci `cache`, jednak na razie na potrzeby przetestowania działania tej funkcji zostały one zakomentowane. Kod przepływu znajduje się [tutaj](../.github/workflows/workflow.yml). 
 
 ```yml
 name: GitHub Actions workflow with push to GHCR
@@ -198,7 +200,7 @@ Wchodząc na nasz profil `GitHub`, a następnie w zakładkę `Packages` widzimy 
 
 ![package](https://user-images.githubusercontent.com/103113980/163731226-49ed5193-6be9-4e80-ae86-64929ef5df22.png)
 
-Jak widać konfiguracja GitHub Container Registry jest bardzo prosta i wymaga niewielu modyfikacji w porównaniu gdy obraz publikowaliśmy na `DockerHub` podczas jednych z zajęć. Modyfikacji musimy poddać następujące fragmenty kodu: 
+Jak widać konfiguracja `GitHub Container Registry` jest bardzo prosta i wymaga niewielu modyfikacji w porównaniu gdy obraz publikowaliśmy na `DockerHub` podczas jednych z zajęć. Modyfikacji musimy poddać następujące fragmenty kodu: 
 
 ```yml
  - name: Login to GitHub
@@ -254,7 +256,7 @@ Wykonujemy kolejny przepływ - ten trwał wyraźnie dłużej niż budowanie popr
 
 ![cachev2](https://user-images.githubusercontent.com/103113980/163732375-8dcaebd2-b4fa-4b72-aa6b-5701d177cfb8.png)
 
-Wchodząc w logi widzimy, że na dodatkowy czas wpłynął eksport danych do pamięci cache. 
+Wchodząc w logi widzimy, że na dodatkowy czas wpłynął eksport danych do pamięci `cache`. 
 
 ![cachev3](https://user-images.githubusercontent.com/103113980/163732378-e9247669-1c38-44f9-a257-c65c3fa0774b.jpg)
 
